@@ -1,4 +1,4 @@
 feast
 pyspark
 pandas 
-scikit-learn
+konlpy
