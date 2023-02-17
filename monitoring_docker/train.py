@@ -1,7 +1,7 @@
 import torch
 import torchtext
 from torchtext.legacy import data # torchtext.data 임포트
-from torchtext.legacy.data import TabularDataset,BucketIterator
+from torchtext.legacy.data import BucketIterator
 import re
 import random
 import torch.nn as nn
@@ -10,6 +10,8 @@ from konlpy.tag import Okt
 import os
 from model import GRU
 from joblib import dump
+import logging
+from data_preprocessing import Create_DataSet
 
 #이 부분은 추후 feast로 변경할 것
 df = pd.read_csv("dataset.csv",encoding='utf-8')
@@ -26,65 +28,24 @@ USE_CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 print("cpu와 cuda 중 다음 기기로 학습함:",DEVICE)
 
-okt=Okt() 
-
-#필드 정의
-ID = data.Field(sequential = False, use_vocab = False)
-TEXT = data.Field(sequential = True,
-                  use_vocab = True,
-                  tokenize = okt.morphs,
-                  lower = True,
-                  batch_first = True,
-                  fix_length = 20)
-LABEL = data.LabelField()
-
-#데이터를 불러와서 데이터셋의 형식으로 바꿔주고, 그와 동시에 토큰화를 수행
-all_datas = TabularDataset(
-    'result_data.csv', format='csv', fields=[("count",None),('id',ID),('msg_body',TEXT),('category',LABEL)], skip_header=True
-)
-
-SEED =1234
-
-torch.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-
-train_data, test_data = all_datas.split(split_ratio=0.8, stratified=False, strata_field = 'label', random_state = random.seed(SEED))
-
-print('훈련 샘플의 갯수: {}'.format(len(train_data)))
-print('테스트 샘플의 개수: {}'.format(len(test_data)))
-
-print(vars(train_data[0])) #확인용
-
-#단어 집합 만들기
-# min_freq: 단어 집합에 추가 시 단어의 최소 등장 빈도 조건을 추가
-# max_size: 단어 집합의 최대 크기를 지정
-TEXT.build_vocab(train_data, min_freq=2, max_size=10000)
-LABEL.build_vocab(train_data)
-
-print('단어 집합의 크기: {}'.format(len(TEXT.vocab)))
-print('라벨의 갯수: {}'.format(len(LABEL.vocab)))
-
-print(TEXT.vocab.freqs.most_common(20))
-print(TEXT.vocab.stoi)
-print(LABEL.vocab.stoi)
+train_data, test_data, text_len = Create_DataSet(df)#df 는 임시 feast에서 받아오는걸로 변경할 것
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-train_iterator, test_iterator = BucketIterator.splits((train_data, test_data),batch_size = BATCH_SIZE, shuffle=True,sort=False, device = device)
+train_iterator, test_iterator = BucketIterator.splits((train_data, test_data),batch_size = BATCH_SIZE, shuffle=True,sort=False, device = DEVICE)
 
 print('훈련 데이터의 미니 배치의 개수 : {}'.format(len(train_iterator)))
 print('테스트 데이터의 미니 배치의 개수 : {}'.format(len(test_iterator)))
 
 
     
-model = GRU(1, 256, len(TEXT.vocab), 896, 2).to(device)
+model = GRU(1, 256, text_len, 896, 2).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 def train(model, optimizer, train_iter):
     model.train()
     for b, batch in enumerate(train_iter):
-        x, y = batch.msg_body.to(device), batch.category.to(device)
+        x, y = batch.msg_body.to(DEVICE), batch.category.to(DEVICE)
 #         y.data.sub_(1)  # 레이블 값을 0과 1로 변환
         optimizer.zero_grad()
 
@@ -99,7 +60,7 @@ def evaluate(model, val_iter):
     model.eval()
     corrects, total_loss = 0, 0
     for batch in val_iter:
-        x, y = batch.msg_body.to(device), batch.category.to(device)
+        x, y = batch.msg_body.to(DEVICE), batch.category.to(DEVICE)
 #         y.data.sub_(1) # 레이블 값을 0과 1로 변환
         logit = model(x)
         loss = F.cross_entropy(logit, y, reduction='sum')
@@ -123,6 +84,7 @@ for e in range(1, EPOCHS+1):
         if not os.path.isdir("snapshot"):
             os.makedirs("snapshot")
         torch.save(model.state_dict(), './snapshot/txtclassification.pt')
+        dump(model, "artifacts/model.joblib")
         best_val_loss = val_loss
 
 #검증

@@ -1,4 +1,4 @@
-feast
+feast==0.29.0
 pyspark
 pandas 
 konlpy

@@ -2,7 +2,6 @@
 from pyspark.sql import SparkSession
 import pandas as pd
 import re
-from data_preprocessing import Create_DataSet
 
 def GetDataFromMongoSpark():
     spark = SparkSession \
@@ -57,7 +56,7 @@ def SetCleanData(pddf):
     print(train_data_result)
 
     #getdatas 넘길때 train, test 나눠서 넘길것
-    train_data_fianl = Create_DataSet(getdatas = train_data_result)
+
 
     #url 감지(이건 나중에)
     # str1 = pddf['msg_data'][0][5]['msg_body']
