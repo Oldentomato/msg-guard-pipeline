@@ -1,11 +1,15 @@
-import os 
 import torch
+import torchtext
+from torchtext.legacy import data # torchtext.data 임포트
+from torchtext.legacy.data import TabularDataset,BucketIterator
+import re
+import random
 import torch.nn as nn
 import torch.nn.functional as F
-from torchtext import data, datasets
-import random
-from sklearn.model_selection import train_test_split 
-import pandas as pd
+from konlpy.tag import Okt 
+import os
+from model import GRU
+from joblib import dump
 
 #이 부분은 추후 feast로 변경할 것
 df = pd.read_csv("dataset.csv",encoding='utf-8')
@@ -15,31 +19,113 @@ torch.manual_seed(SEED)
 
 #하이퍼파라미터
 BATCH_SIZE = 64
-lf = 0.001
-EPOCHS = 10
+lr = 0.001
+EPOCHS = 100
 
 USE_CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 print("cpu와 cuda 중 다음 기기로 학습함:",DEVICE)
 
-#torchtext.data 의 Field 클래스를 사용하여 메세지 내용에 대한 객체 TEXT, 레이블을 위한 객체 LABEL을 생성
-TEXT = data.Field(sequential=True, batch_first=True, lower=True)
-LABEL = data.Field(sequential=False, batch_first=True)
-#데이터셋이 순차적인 데이터셋임을 알 수 있도록 sequential 인자값으로 True를 명시해준다. 레이블은 단순한 클래스를 나타내는 숫자로 순차적인 데이터가 아니므로 False를 명시한다.
-# batch_first 는 신경망에 입력되는 텐서의 첫번째 차원값이 batch_size가 되도록 한다. 그리고 lower 변수를 통해 텍스트 데이터 속 모든 영문 알파벳이 소문자가 되도록 한다.
+okt=Okt() 
+
+#필드 정의
+ID = data.Field(sequential = False, use_vocab = False)
+TEXT = data.Field(sequential = True,
+                  use_vocab = True,
+                  tokenize = okt.morphs,
+                  lower = True,
+                  batch_first = True,
+                  fix_length = 20)
+LABEL = data.LabelField()
+
+#데이터를 불러와서 데이터셋의 형식으로 바꿔주고, 그와 동시에 토큰화를 수행
+all_datas = TabularDataset(
+    'result_data.csv', format='csv', fields=[("count",None),('id',ID),('msg_body',TEXT),('category',LABEL)], skip_header=True
+)
+
+SEED =1234
+
+torch.manual_seed(SEED)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
+train_data, test_data = all_datas.split(split_ratio=0.8, stratified=False, strata_field = 'label', random_state = random.seed(SEED))
+
+print('훈련 샘플의 갯수: {}'.format(len(train_data)))
+print('테스트 샘플의 개수: {}'.format(len(test_data)))
+
+print(vars(train_data[0])) #확인용
 
 #단어 집합 만들기
-#min_freq는 학습 데이터에서 최소 5번 이상 등장한 단어만을 단어 집합에 추가하겠다는 의미이다.
-#이때 학습 데이터에서 5번 미만으로 등장한 단어는 Unknown이라는 의미에서 '<unk>'라는 토큰으로 대체된다.
-TEXT.build_vocab(trainset, min_freq=5)# 단어 집합 생성
-LABEL.build_vocab(trainset)
+# min_freq: 단어 집합에 추가 시 단어의 최소 등장 빈도 조건을 추가
+# max_size: 단어 집합의 최대 크기를 지정
+TEXT.build_vocab(train_data, min_freq=2, max_size=10000)
+LABEL.build_vocab(train_data)
 
-vocab_size = len(TEXT.vocab)
-n_classes = 2
-print('단어 집합의 크기: {}'.format(vocab_size))
-print('클래스의 개수 : {}'.format(n_classes))
+print('단어 집합의 크기: {}'.format(len(TEXT.vocab)))
+print('라벨의 갯수: {}'.format(len(LABEL.vocab)))
 
-#stoi로 단어와 각 단어의 정수 인덱스가 저장되어져 있는 딕셔너리 객체에 접근
+print(TEXT.vocab.freqs.most_common(20))
 print(TEXT.vocab.stoi)
+print(LABEL.vocab.stoi)
 
-x_train,x_test,y_train,y_test = train_test_split(data.x, data.y, test_size=0.2, random_state=1234)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+train_iterator, test_iterator = BucketIterator.splits((train_data, test_data),batch_size = BATCH_SIZE, shuffle=True,sort=False, device = device)
+
+print('훈련 데이터의 미니 배치의 개수 : {}'.format(len(train_iterator)))
+print('테스트 데이터의 미니 배치의 개수 : {}'.format(len(test_iterator)))
+
+
+    
+model = GRU(1, 256, len(TEXT.vocab), 896, 2).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+def train(model, optimizer, train_iter):
+    model.train()
+    for b, batch in enumerate(train_iter):
+        x, y = batch.msg_body.to(device), batch.category.to(device)
+#         y.data.sub_(1)  # 레이블 값을 0과 1로 변환
+        optimizer.zero_grad()
+
+        logit = model(x)
+        loss = F.cross_entropy(logit, y)
+        loss.backward()
+        optimizer.step()
+
+
+def evaluate(model, val_iter):
+    """evaluate model"""
+    model.eval()
+    corrects, total_loss = 0, 0
+    for batch in val_iter:
+        x, y = batch.msg_body.to(device), batch.category.to(device)
+#         y.data.sub_(1) # 레이블 값을 0과 1로 변환
+        logit = model(x)
+        loss = F.cross_entropy(logit, y, reduction='sum')
+        total_loss += loss.item()
+        corrects += (logit.max(1)[1].view(y.size()).data == y.data).sum()
+    size = len(val_iter.dataset)
+    avg_loss = total_loss / size
+    avg_accuracy = 100.0 * corrects / size
+    return avg_loss, avg_accuracy
+
+#학습
+best_val_loss = None
+for e in range(1, EPOCHS+1):
+    train(model, optimizer, train_iterator)
+    val_loss, val_accuracy = evaluate(model, test_iterator)
+
+    print("[Epoch: %d] val loss : %5.2f | val accuracy : %5.2f" % (e, val_loss, val_accuracy))
+
+    # 검증 오차가 가장 적은 최적의 모델을 저장
+    if not best_val_loss or val_loss < best_val_loss:
+        if not os.path.isdir("snapshot"):
+            os.makedirs("snapshot")
+        torch.save(model.state_dict(), './snapshot/txtclassification.pt')
+        best_val_loss = val_loss
+
+#검증
+model.load_state_dict(torch.load('./snapshot/txtclassification.pt'))
+test_loss, test_acc = evaluate(model, test_iterator)
+print('테스트 오차: %5.2f | 테스트 정확도: %5.2f' % (test_loss, test_acc))
