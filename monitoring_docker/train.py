@@ -1,20 +1,14 @@
 import torch
 import torchtext
-from torchtext.legacy import data # torchtext.data 임포트
 from torchtext.legacy.data import BucketIterator
-import re
 import random
-import torch.nn as nn
 import torch.nn.functional as F
-from konlpy.tag import Okt 
 import os
 from model import GRU
 from joblib import dump
-import logging
 from data_preprocessing import Create_DataSet
 
-#이 부분은 추후 feast로 변경할 것
-df = pd.read_csv("dataset.csv",encoding='utf-8')
+
 SEED = 5
 random.seed(SEED)
 torch.manual_seed(SEED)
@@ -28,7 +22,7 @@ USE_CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 print("cpu와 cuda 중 다음 기기로 학습함:",DEVICE)
 
-train_data, test_data, text_len = Create_DataSet(df)#df 는 임시 feast에서 받아오는걸로 변경할 것
+train_data, test_data, text_len = Create_DataSet()
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

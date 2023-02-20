@@ -55,7 +55,8 @@ def SetCleanData(pddf):
         
     print(train_data_result)
 
-    #getdatas 넘길때 train, test 나눠서 넘길것
+    #feature store를 위한 parquet 파일 저장
+    train_data_result.to_parquet('/workspace/feature_store/feature_repo/data/msg_data.parquet')
 
 
     #url 감지(이건 나중에)

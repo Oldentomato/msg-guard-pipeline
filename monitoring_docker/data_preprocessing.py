@@ -1,9 +1,10 @@
 import torch
 import torchtext
-from torchtext.legacy.data import TabularDataset,Field, Dataset, Example,LabelField
-import random
+from torchtext.legacy.data import Field, Dataset, Example,LabelField
 from konlpy.tag import Okt 
 import pandas as pd
+from feast import FeatureStore
+import datetime
 
 
 class DataFrameDataset(Dataset):
@@ -49,11 +50,47 @@ class SeriesExample(Example):
             else:
                 setattr(ex, key, data[key])
         return ex
+    
+def __Split_DataFrame(df, frac, random_state):
+    train = df.sample(frac=frac, random_state=random_state)
+    test = df.drop(train.index)
+
+    return train, test
 
 
 
-def Create_DataSet(getdatas):
-    #Mecab을 토크나이저로 사용
+def Create_DataSet():
+
+    entity_df = pd.DataFrame.from_dict({
+    "id": [],
+    "event_timestamp": datetime(2022,10,5,12,50,4) #datetime 은 가장 마지막 시간보다 크게해야함
+    })
+
+
+    store = FeatureStore(repo_path="/workspace/feature_store/feature_repo/")
+
+
+    # feature = store.get_online_features(
+    #     features=[
+    #         "msg_datas:msg_body",
+    #         "msg_datas:category"
+    #     ],
+    #     entity_rows=[
+    #         {"id": 3031}
+    #     ]
+    # ).to_dict()
+
+    # pprint(feature)
+    training_df = store.get_historical_features(
+        entity_df=entity_df,  # 위에서 만든 데이터프레임을 넘겨준다.
+        features = [
+            'msg_datas:msg_body',
+            'msg_datas:category',
+        ],  # 불러올 feature를 적는다.
+    ).to_df()
+
+    # training_df.head()
+
     okt=Okt() 
 
     #필드 정의
@@ -66,25 +103,31 @@ def Create_DataSet(getdatas):
                       fix_length = 20)
     
     LABEL = LabelField()
+
+    SEED =1234
     
     #데이터를 불러와서 데이터셋의 형식으로 바꿔주고, 그와 동시에 토큰화를 수행
 
     fields = {"count": None, "id": ID, "msg_body":TEXT, "category":LABEL}
 
-    train_ds = DataFrameDataset(train_df, fields)
-    valid_ds = DataFrameDataset(valid_df, fields)
+    train_df, valid_df = __Split_DataFrame(training_df, 0.8, 200)
 
-    all_datas = TabularDataset(
-        'result_data.csv', format='csv', fields=[("count",None),('id',ID),('msg_body',TEXT),('category',LABEL)], skip_header=True
-    )
+    train_data = DataFrameDataset(train_df, fields)
+    test_data = DataFrameDataset(valid_df, fields)
 
-    SEED =1234
+
+
+    # all_datas = TabularDataset(
+    #     'result_data.csv', format='csv', fields=[("count",None),('id',ID),('msg_body',TEXT),('category',LABEL)], skip_header=True
+    # )
+
 
     torch.manual_seed(SEED)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    train_data, test_data = all_datas.split(split_ratio=0.8, stratified=False, strata_field = 'label', random_state = random.seed(SEED))
+
+    # train_data, test_data = all_datas.split(split_ratio=0.8, stratified=False, strata_field = 'label', random_state = random.seed(SEED))
 
     print('훈련 샘플의 갯수: {}'.format(len(train_data)))
     print('테스트 샘플의 개수: {}'.format(len(test_data)))
