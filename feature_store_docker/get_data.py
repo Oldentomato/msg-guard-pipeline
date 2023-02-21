@@ -35,28 +35,19 @@ def SetCleanData(pddf):
 
     print(msg_df)#확인용
 
-    #일반 데이터와 정답 데이터 병합
-    y_df = pd.read_csv('y_data.csv')
 
-    y_df.drop(['Unnamed: 0'],axis=1,inplace=True)
 
-    train_data = pd.merge(msg_df,y_df, left_index=True, right_index=True)
-
-    #category가 2인 열들 삭제
-    idx = train_data[train_data['category']==2].index
-    train_data_result = train_data.drop(idx)
-
-    #[Web발신] 글자 삭제 및 한글만 남기기
-    for i,items in train_data_result.iterrows():
+    #[Web발신] 글자 삭제 및 한글만 남기기, timestamp에서 datetime으로 변환
+    for i,items in msg_df.iterrows():
         new_str = items['msg_body'].replace('[Web발신]','')
         hangul = re.compile('[^ ㄱ-ㅣ가-힣]+')
         result = hangul.sub('',new_str)
-        train_data_result.loc[i,'msg_body'] = result
+        msg_df.loc[i,'msg_body'] = result
         
-    print(train_data_result)
+    print(msg_df)
 
     #feature store를 위한 parquet 파일 저장
-    train_data_result.to_parquet('/workspace/feature_store/feature_repo/data/msg_data.parquet')
+    msg_df.to_parquet('/workspace/feature_store/feature_repo/data/msg_data.parquet')
 
 
     #url 감지(이건 나중에)

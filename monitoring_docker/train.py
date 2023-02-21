@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import os
 from model import GRU
 from joblib import dump
-from data_preprocessing import Create_DataSet
+from data_preprocessing import MsgTrainModel
 
 
 SEED = 5
@@ -22,54 +22,22 @@ USE_CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 print("cpu와 cuda 중 다음 기기로 학습함:",DEVICE)
 
-train_data, test_data, text_len = Create_DataSet()
-
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-train_iterator, test_iterator = BucketIterator.splits((train_data, test_data),batch_size = BATCH_SIZE, shuffle=True,sort=False, device = DEVICE)
-
-print('훈련 데이터의 미니 배치의 개수 : {}'.format(len(train_iterator)))
-print('테스트 데이터의 미니 배치의 개수 : {}'.format(len(test_iterator)))
 
 
-    
-model = GRU(1, 256, text_len, 896, 2).to(DEVICE)
+best_val_loss = None
+
+model_cls = MsgTrainModel("/workspace/my_project/feature_repo/feature_repo/","msg_svc",BATCH_SIZE, device)
+
+train_iterator,test_iterator,text_len = model_cls.get_training_data()
+
+model = GRU(1, 256, text_len, 896, 2).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-def train(model, optimizer, train_iter):
-    model.train()
-    for b, batch in enumerate(train_iter):
-        x, y = batch.msg_body.to(DEVICE), batch.category.to(DEVICE)
-#         y.data.sub_(1)  # 레이블 값을 0과 1로 변환
-        optimizer.zero_grad()
-
-        logit = model(x)
-        loss = F.cross_entropy(logit, y)
-        loss.backward()
-        optimizer.step()
-
-
-def evaluate(model, val_iter):
-    """evaluate model"""
-    model.eval()
-    corrects, total_loss = 0, 0
-    for batch in val_iter:
-        x, y = batch.msg_body.to(DEVICE), batch.category.to(DEVICE)
-#         y.data.sub_(1) # 레이블 값을 0과 1로 변환
-        logit = model(x)
-        loss = F.cross_entropy(logit, y, reduction='sum')
-        total_loss += loss.item()
-        corrects += (logit.max(1)[1].view(y.size()).data == y.data).sum()
-    size = len(val_iter.dataset)
-    avg_loss = total_loss / size
-    avg_accuracy = 100.0 * corrects / size
-    return avg_loss, avg_accuracy
-
-#학습
-best_val_loss = None
 for e in range(1, EPOCHS+1):
-    train(model, optimizer, train_iterator)
-    val_loss, val_accuracy = evaluate(model, test_iterator)
+    model_cls.train_model(model,optimizer, train_iterator)
+    val_loss, val_accuracy = model_cls.evaluate_model(model,test_iterator)
 
     print("[Epoch: %d] val loss : %5.2f | val accuracy : %5.2f" % (e, val_loss, val_accuracy))
 
@@ -78,8 +46,8 @@ for e in range(1, EPOCHS+1):
         if not os.path.isdir("snapshot"):
             os.makedirs("snapshot")
         torch.save(model.state_dict(), './snapshot/txtclassification.pt')
-        dump(model, "artifacts/model.joblib")
         best_val_loss = val_loss
+
 
 #검증
 model.load_state_dict(torch.load('./snapshot/txtclassification.pt'))
