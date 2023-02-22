@@ -1,13 +1,13 @@
 from datetime import timedelta
 import os
 
-from feast import Entity, Field, FeatureView,FileSource,ValueType
+from feast import Entity, Field, FeatureView,FileSource,ValueType, FeatureService
 from feast.types import Int64, String
 
-msg_id = Entity(name="msg_id", value_type=ValueType.INT64)
+msg_id = Entity(name="id", value_type=ValueType.INT64)
 
 msg_hourly_datas = FileSource(
-    path= os.getcwd()+"/data/msg_data.parquet",
+    path=os.getcwd()+"/data/msg_data.parquet",
     event_timestamp_column="event_timestamp"
 )
 
@@ -18,8 +18,13 @@ msg_hourly_datas_view = FeatureView(
     ttl=timedelta(days=0),
     schema=[
         Field(name="msg_body", dtype=String),
-        Field(name="category", dtype=Int64),
     ],
     online=False,
     source=msg_hourly_datas,
+)
+
+msg_fs = FeatureService(
+    name = "msg_svc",
+    features=[msg_hourly_datas_view],
+    tags={"description": "Used for training NLP model"}
 )
