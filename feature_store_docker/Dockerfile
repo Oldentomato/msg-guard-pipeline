@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends default-jre default-jdk
 
 WORKDIR /feature_store
+RUN mkdir data
 COPY . /feature_store
 
 
