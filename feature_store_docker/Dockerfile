@@ -9,6 +9,6 @@ WORKDIR /feature_store
 RUN mkdir data
 COPY . /feature_store
 
-
 EXPOSE 21571
-CMD ["python","get_data.py","&&","feast","apply"]
+RUN python get_data.py
+CMD ["feast","apply"]
