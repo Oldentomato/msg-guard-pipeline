@@ -9,7 +9,7 @@ services:
       - shared-data:/code/production
     ports:
       - "5000:80"
-    depends-on:
+    depends_on:
       - store
     environment:
       - ENABLE_METRICS=true
