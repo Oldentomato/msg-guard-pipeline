@@ -7,6 +7,7 @@ import os
 from model import GRU
 from joblib import dump
 from data_preprocessing import MsgTrainModel
+import os
 
 
 SEED = 5
@@ -28,7 +29,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 best_val_loss = None
 
-model_cls = MsgTrainModel("/workspace/my_project/feature_repo/feature_repo/","msg_svc",BATCH_SIZE, device)
+model_cls = MsgTrainModel("code/datas/feature_store/feature_repo/","msg_svc",BATCH_SIZE, device)
 
 train_iterator,test_iterator,text_len = model_cls.get_training_data()
 

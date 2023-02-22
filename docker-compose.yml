@@ -2,7 +2,9 @@ version: "3"
 
 sercvices:
   web:
-    build: ./monitoring_docker
+    build: 
+      context: .
+      dockerfile: ./monitoring_docker
     volumes:
       - shared-data:/code/production
     ports:
@@ -11,9 +13,13 @@ sercvices:
       - store
     environment:
       - ENABLE_METRICS=true
+    restart: always
+    command: tail -f /dev/null
 
   store:
-    build: ./feature_store_docker
+    build: 
+      context: .
+      dockerfile: ./feature_store_docker
     volumes:
       - shared-data:/code/datas
     ports:
