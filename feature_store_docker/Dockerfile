@@ -11,5 +11,4 @@ COPY . /feature_store
 
 
 EXPOSE 21571
-CMD ["python","get_data.py"]
-RUN feast apply
+CMD ["python","get_data.py","&&","feast","apply"]
