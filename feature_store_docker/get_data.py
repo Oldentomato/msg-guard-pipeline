@@ -3,6 +3,7 @@ from pyspark.sql import SparkSession
 import pandas as pd
 import re
 import os
+import datetime
 
 def GetDataFromMongoSpark():
     spark = SparkSession \
@@ -30,7 +31,7 @@ def SetCleanData(pddf):
     for count in range(0,len(pddf['msg_data'])):
         for msg in pddf['msg_data'][count]:
             if msg['msg_body'].find('(광고)') == -1:
-                final_msgs.append({'id':msg['msg_id'],'msg_body':msg['msg_body']})
+                final_msgs.append({'id':msg['msg_id'],'event_timestamp':msg['msg_date'], 'msg_body':msg['msg_body']})
 
     msg_df = pd.DataFrame(final_msgs)            
 
@@ -41,9 +42,11 @@ def SetCleanData(pddf):
     #[Web발신] 글자 삭제 및 한글만 남기기, timestamp에서 datetime으로 변환
     for i,items in msg_df.iterrows():
         new_str = items['msg_body'].replace('[Web발신]','')
+        new_time = datetime.fromtimestamp(items['event_timestamp']/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
         hangul = re.compile('[^ ㄱ-ㅣ가-힣]+')
         result = hangul.sub('',new_str)
         msg_df.loc[i,'msg_body'] = result
+        msg_df.loc[i,'event_timestamp'] = new_time
         
     print(msg_df)
 
