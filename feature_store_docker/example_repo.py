@@ -6,7 +6,7 @@ from feast.types import Int64, String
 msg_id = Entity(name="msg_id", value_type=ValueType.INT64)
 
 msg_hourly_datas = FileSource(
-    path="/workspace/feature_store/feature_repo/data/msg_data.parquet",
+    path="/workspace/feature_store/data/msg_data.parquet",
     event_timestamp_column="event_timestamp"
 )
 
