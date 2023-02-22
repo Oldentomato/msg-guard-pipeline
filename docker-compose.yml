@@ -2,9 +2,7 @@ version: "3"
 
 services:
   web:
-    build: 
-      context: .
-      dockerfile: ./monitoring_docker
+    build: ./monitoring_docker
     volumes:
       - shared-data:/code/production
     ports:
@@ -17,9 +15,7 @@ services:
     command: tail -f /dev/null
 
   store:
-    build: 
-      context: .
-      dockerfile: ./feature_store_docker
+    build: ./feature_store_docker
     volumes:
       - shared-data:/code/datas
     ports:
