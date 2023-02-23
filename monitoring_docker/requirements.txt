@@ -10,7 +10,7 @@ matplotlib==3.7.0
 feast==0.29.0
 
 --find-links https://download.pytorch.org/whl/cu111
-pytorch==1.8.0+cu111
+torch==1.8.0+cu111
 --find-links https://download.pytorch.org/whl/cu111
 torchvision==0.13.0+cu111
 --find-links https://download.pytorch.org/whl/cu111
