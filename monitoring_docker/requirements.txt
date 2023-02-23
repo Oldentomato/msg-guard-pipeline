@@ -1,19 +1,19 @@
-fastapi
-numpy
-pandas 
+fastapi==0.92.0
+numpy==1.22.3
+pandas==1.5.3
 prometheus-fastapi-instrumentator
-scikit-learn
-pydantic
-uvicorn
-joblib
-matplotlib
+scikit-learn==1.2.1
+pydantic==1.10.5
+uvicorn==0.20.0
+joblib==1.2.0
+matplotlib==3.7.0
 feast==0.29.0
 
---extra-index-url https://download.pytorch.org/whl/cu111
+--find-links https://download.pytorch.org/whl/cu111
 pytorch==1.8.0+cu111
---extra-index-url https://download.pytorch.org/whl/cu111
+--find-links https://download.pytorch.org/whl/cu111
 torchvision==0.13.0+cu111
---extra-index-url https://download.pytorch.org/whl/cu111
+--find-links https://download.pytorch.org/whl/cu111
 torchaudio==0.12.0+cu111
 
 torchtext==0.9.0
