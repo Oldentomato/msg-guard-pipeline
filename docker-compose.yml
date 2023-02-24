@@ -12,7 +12,7 @@ services:
     environment:
       - ENABLE_METRICS=true
     restart: always
-    command: tail -f /dev/null
+    command: python train.py
 
   store:
     build: ./feature_store_docker
@@ -20,6 +20,8 @@ services:
       - shared-data:/code/datas
     ports:
       - "21571:21571"
+
+    command: python get_data.py && feast apply
 
 volumes:
   shared-data:

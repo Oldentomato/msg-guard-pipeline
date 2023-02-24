@@ -4,7 +4,7 @@ from torchtext.legacy.data import Field, Dataset, Example,LabelField, BucketIter
 from konlpy.tag import Okt 
 import pandas as pd
 from feast import FeatureStore
-import datetime
+from datetime import datetime
 import re
 import feast
 
