@@ -8,6 +8,7 @@ from model import GRU
 from joblib import dump
 from data_preprocessing import MsgTrainModel
 import os
+from datetime import datetime
 
 
 SEED = 5
@@ -46,11 +47,14 @@ for e in range(1, EPOCHS+1):
     if not best_val_loss or val_loss < best_val_loss:
         if not os.path.isdir("snapshot"):
             os.makedirs("snapshot")
-        torch.save(model.state_dict(), './snapshot/txtclassification.pt')
+        if not os.path.isdir("artifacts"):
+            os.makedirs("artifacts")
+        dump(model, "artifacts/model.joblib")
+        torch.save(model.state_dict(), './snapshot/'+datetime.today().strftime("%Y/%m/%d %H:%M:%S")+'.pt')
         best_val_loss = val_loss
 
 
 #검증
 model.load_state_dict(torch.load('./snapshot/txtclassification.pt'))
-test_loss, test_acc = evaluate(model, test_iterator)
+test_loss, test_acc = model_cls.evaluate_model(model, test_iterator)
 print('테스트 오차: %5.2f | 테스트 정확도: %5.2f' % (test_loss, test_acc))
