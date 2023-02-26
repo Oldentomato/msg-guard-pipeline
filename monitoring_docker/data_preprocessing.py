@@ -142,7 +142,7 @@ class MsgTrainModel:
         print(TEXT.vocab.stoi)
         print(LABEL.vocab.stoi)
         
-        train_iterator, test_iterator = BucketIterator.splits((train_data, test_data),batch_size = self._batch_size, shuffle=True,sort=False, device = device)
+        train_iterator, test_iterator = BucketIterator.splits((train_data, test_data),batch_size = self._batch_size, shuffle=True,sort=False, device = self._device)
         
         
         return train_iterator, test_iterator, len(TEXT.vocab)
