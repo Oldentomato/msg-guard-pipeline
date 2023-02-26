@@ -20,7 +20,7 @@ services:
     ports:
       - "21571:21571"
 
-    command: bash -c "python get_data.py && feast apply"
+    command: bash -c "python get_data.py && cd ./code/datas && feast apply"
 
 volumes:
   shared-data:

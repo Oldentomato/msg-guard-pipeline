@@ -6,8 +6,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends default-jre default-jdk
 
 WORKDIR /workspace
-RUN mkdir data
-COPY . /workspace/code/datas
+COPY Dockerfile /workspace
+COPY requirements.txt /workspace
+COPY get_data.py /workspace
+COPY feature_store.yaml /workspace/code/datas
+COPY example_repo.py /workspace/code/datas
 
 EXPOSE 21571
 # RUN python get_data.py
