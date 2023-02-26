@@ -11,7 +11,7 @@ services:
       - store
     environment:
       - ENABLE_METRICS=true
-    command: bash -c "python train.py && tail -f /dev/null"
+    command: bash -c "cd /manager && python train.py && tail -f /dev/null"
 
   store:
     build: ./feature_store_docker
