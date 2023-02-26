@@ -21,11 +21,9 @@ lr = 0.001
 EPOCHS = 100
 
 USE_CUDA = torch.cuda.is_available()
-DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
-print("cpu와 cuda 중 다음 기기로 학습함:",DEVICE)
+device = torch.device("cuda" if USE_CUDA else "cpu")
+print("cpu와 cuda 중 다음 기기로 학습함:",device)
 
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 best_val_loss = None

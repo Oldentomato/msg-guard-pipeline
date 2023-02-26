@@ -8,7 +8,8 @@ services:
     ports:
       - "5000:80"
     depends_on:
-      - store
+      store:
+        condition: service_completed_successfully
     environment:
       - ENABLE_METRICS=true
     command: bash -c "cd /manager && python train.py && tail -f /dev/null"
