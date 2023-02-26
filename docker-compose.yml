@@ -4,7 +4,7 @@ services:
   web:
     build: ./monitoring_docker
     volumes:
-      - shared-data:/code/production
+      - shared-data:/code/datas
     ports:
       - "5000:80"
     depends_on:
