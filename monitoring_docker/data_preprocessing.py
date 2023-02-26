@@ -6,6 +6,7 @@ import pandas as pd
 from feast import FeatureStore
 from datetime import datetime
 import re
+import torch.nn.functional as F
 import feast
 
 

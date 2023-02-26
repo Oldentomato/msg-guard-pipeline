@@ -2,7 +2,6 @@ import torch
 import torchtext
 from torchtext.legacy.data import BucketIterator
 import random
-import torch.nn.functional as F
 import os
 from model import GRU
 from joblib import dump
