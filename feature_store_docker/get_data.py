@@ -50,7 +50,7 @@ def SetCleanData(pddf):
     print(msg_df)
 
     #feature store를 위한 parquet 파일 저장
-    msg_df.to_parquet('./code/datas/msg_data.parquet')
+    msg_df.to_parquet('./msg_data.parquet')
 
 
     #url 감지(이건 나중에)

@@ -5,12 +5,8 @@ RUN pip install -r requirements.txt
 RUN apt-get update && \
     apt-get install -y --no-install-recommends default-jre default-jdk
 
-
-COPY Dockerfile /workspace
-COPY requirements.txt /workspace
-COPY get_data.py /workspace
-COPY feature_store.yaml /workspace/code/datas/
-COPY example_repo.py /workspace/code/datas/
+WORKDIR /code/datas
+COPY . /code/datas
 
 EXPOSE 21571
 # RUN python get_data.py
