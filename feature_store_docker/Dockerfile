@@ -5,9 +5,9 @@ RUN pip install -r requirements.txt
 RUN apt-get update && \
     apt-get install -y --no-install-recommends default-jre default-jdk
 
-WORKDIR /feature_store
+WORKDIR /workspace
 RUN mkdir data
-COPY . /feature_store
+COPY . /workspace
 
 EXPOSE 21571
 RUN python get_data.py

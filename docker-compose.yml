@@ -12,7 +12,7 @@ services:
     environment:
       - ENABLE_METRICS=true
     restart: always
-    command: python train.py
+    command: bash -c "python train.py && tail -f /dev/null"
 
   store:
     build: ./feature_store_docker
