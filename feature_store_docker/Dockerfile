@@ -9,8 +9,8 @@ WORKDIR /workspace
 COPY Dockerfile /workspace
 COPY requirements.txt /workspace
 COPY get_data.py /workspace
-COPY feature_store.yaml /workspace/code/datas
-COPY example_repo.py /workspace/code/datas
+COPY feature_store.yaml /workspace/code/datas/
+COPY example_repo.py /workspace/code/datas/
 
 EXPOSE 21571
 # RUN python get_data.py
