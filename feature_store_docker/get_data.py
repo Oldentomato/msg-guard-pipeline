@@ -2,7 +2,6 @@
 from pyspark.sql import SparkSession
 import pandas as pd
 import re
-import os
 from datetime import datetime
 
 def GetDataFromMongoSpark():

@@ -1,5 +1,5 @@
 from datetime import timedelta
-import os
+
 
 from feast import Entity, Field, FeatureView,FileSource,ValueType, FeatureService
 from feast.types import String
