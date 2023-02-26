@@ -7,8 +7,8 @@ RUN apt-get update && \
 
 WORKDIR /workspace
 RUN mkdir data
-COPY . /workspace
+COPY . /workspace/code/datas
 
 EXPOSE 21571
-RUN python get_data.py
+# RUN python get_data.py
 # CMD ["feast","apply"]
