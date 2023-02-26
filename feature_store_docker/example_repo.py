@@ -7,7 +7,7 @@ from feast.types import String
 msg_id = Entity(name="id", value_type=ValueType.INT64)
 
 msg_hourly_datas = FileSource(
-    path="./code/data/msg_data.parquet",
+    path=os.getcwd()+"code/data/msg_data.parquet",
     event_timestamp_column="event_timestamp"
 )
 

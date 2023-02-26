@@ -30,7 +30,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 best_val_loss = None
 
-model_cls = MsgTrainModel("./code/datas/feature_repo/","msg_svc",BATCH_SIZE, device)
+model_cls = MsgTrainModel(os.getcwd()+"code/datas/feature_repo/","msg_svc",BATCH_SIZE, device)
 
 train_iterator,test_iterator,text_len = model_cls.get_training_data()
 
