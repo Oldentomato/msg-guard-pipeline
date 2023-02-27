@@ -1,10 +1,8 @@
 import torch
 import torchtext
-from torchtext.legacy.data import BucketIterator
 import random
 import os
 from model import GRU
-from joblib import dump
 from data_preprocessing import MsgTrainModel
 import os
 from datetime import datetime
@@ -46,7 +44,7 @@ for e in range(1, EPOCHS+1):
             os.makedirs("snapshot")
         if not os.path.isdir("artifacts"):
             os.makedirs("artifacts")
-        dump(model, "artifacts/model.joblib")
+        torch.save(model, "artifacts/model.pt")
         chkp_name = datetime.today().strftime("%Y_%m_%d")
         torch.save(model.state_dict(), './snapshot/'+chkp_name+'.pt')
         best_val_loss = val_loss
