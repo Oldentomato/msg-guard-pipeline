@@ -7,6 +7,7 @@ from feast import FeatureStore
 from datetime import datetime
 import torch.nn.functional as F
 import feast
+import pickle
 
 
 class DataFrameDataset(Dataset):
@@ -61,11 +62,15 @@ def Split_DataFrame(df, frac, random_state):
 
 class MsgPredict:
     def __init__(self,msg_body):
-        self._msg_df = pd.DataFrame(msg_body)
+        self._msg_df = pd.DataFrame(msg_body,index = [0])
 
-    def __call__(self):
+    def SetData(self):
         USE_CUDA = torch.cuda.is_available()
         device = torch.device("cuda" if USE_CUDA else "cpu")
+        print(self._msg_df)
+        with open('artifacts/vocab.pkl','rb') as f:
+            SAVE_TEXT = pickle.load(f)
+        
         okt=Okt() 
 
         ID = Field(sequential = False, use_vocab = False)
@@ -80,13 +85,27 @@ class MsgPredict:
 
         data = DataFrameDataset(self._msg_df, fields)
 
-        TEXT.build_vocab(data, min_freq=2, max_size=10000)
+        TEXT.build_vocab(data)
 
 
-        indexed = [TEXT.vocab.stoi[t] for t in data]
-        tensor = torch.LongTensor(indexed).to(device)
+#         indexed = [TEXT.vocab.stoi[i] for i in TEXT.vocab.stoi.keys()]
+        index = []
+        
+        for key, value in TEXT.vocab.stoi.items():
+            if key in SAVE_TEXT:
+                index.append(SAVE_TEXT[key])
+            else:
+                index.append(0)
+                
+        tensor = torch.LongTensor(index).to(device)
         tensor = tensor.unsqueeze(0)
-
+#         print(TEXT.vocab.stoi)
+#         print(SAVE_TEXT)
+#         print("vocab:")
+#         print(index)
+#         for i in TEXT.vocab.stoi.keys():
+#             print(i)
+#             print(TEXT.vocab.stoi[i])
         
         return tensor
 
@@ -165,6 +184,10 @@ class MsgTrainModel:
         # max_size: 단어 집합의 최대 크기를 지정
         TEXT.build_vocab(train_data, min_freq=2, max_size=10000)
         LABEL.build_vocab(train_data)
+
+        #단어집합 저장
+        with open('artifacts/vocab.pkl', 'wb') as f:
+            pickle.dump(TEXT.vocab.stoi,f, protocol=pickle.HIGHEST_PROTOCOL)
 
         print('단어 집합의 크기: {}'.format(len(TEXT.vocab)))
         print('라벨의 갯수: {}'.format(len(LABEL.vocab)))
