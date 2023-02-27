@@ -5,7 +5,6 @@ from konlpy.tag import Okt
 import pandas as pd
 from feast import FeatureStore
 from datetime import datetime
-import re
 import torch.nn.functional as F
 import feast
 
@@ -60,7 +59,38 @@ def Split_DataFrame(df, frac, random_state):
 
     return train, test
 
+class MsgPredict:
+    def __init__(self,msg_body):
+        self._msg_df = pd.DataFrame(msg_body)
 
+    def __call__(self):
+        USE_CUDA = torch.cuda.is_available()
+        device = torch.device("cuda" if USE_CUDA else "cpu")
+        okt=Okt() 
+
+        ID = Field(sequential = False, use_vocab = False)
+        TEXT = Field(sequential = True,
+                          use_vocab = True,
+                          tokenize = okt.morphs,
+                          lower = True,
+                          batch_first = True,
+                          fix_length = 20)
+        
+        fields = {"id": ID, "msg_body":TEXT}
+
+        data = DataFrameDataset(self._msg_df, fields)
+
+        TEXT.build_vocab(data, min_freq=2, max_size=10000)
+
+
+        indexed = [TEXT.vocab.stoi[t] for t in data]
+        tensor = torch.LongTensor(indexed).to(device)
+        tensor = tensor.unsqueeze(0)
+
+        
+        return tensor
+
+        
 
 class MsgTrainModel:
     def __init__(self, repo_path:str, f_service_name:str, batch_size, device) -> None:

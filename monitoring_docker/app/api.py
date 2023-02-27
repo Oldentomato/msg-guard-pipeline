@@ -4,6 +4,7 @@ from fastapi import FastAPI, Response
 from joblib import load
 from .schemas import Wine, Rating, feature_names
 from .monitoring import instrumentator
+from data_preprocessing import MsgPredict
 
 ROOT_DIR = Path(__file__).parent.parent
 
@@ -21,11 +22,15 @@ def root():
 
 @app.post("/predict", response_model=Rating)
 def predict(response: Response, sample: Wine):
-    sample_dict = sample.dict()
-    features = np.array([sample_dict[f] for f in feature_names]).reshape(1, -1)
-    prediction = model.predict(features)[0]
-    response.headers["X-model-score"] = str(prediction)
-    return Rating(quality=prediction)
+    features = MsgPredict(sample.dict())
+
+
+    # sample_dict = sample.dict()
+    # features = np.array([sample_dict[f] for f in feature_names]).reshape(1, -1)
+    # prediction = model.predict(features)[0]
+    prediction = model.predict(features)
+    response.headers["X-model-Msg"] = str(prediction)
+    return prediction
 
 
 @app.post("/urlpredict")
