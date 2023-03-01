@@ -1,7 +1,7 @@
 from pathlib import Path
 from fastapi import FastAPI
 # from .monitoring import instrumentator
-from predict import prediction
+from app.predict import prediction
 from pydantic import BaseModel
 
 ROOT_DIR = Path(__file__).parent.parent
@@ -21,7 +21,7 @@ def root():
 
 
 @app.post("/predict")
-def predict(msg: MSG):
+def predict_msg(msg: MSG):
     result = prediction(msg)
     return {"spam": result}
 
