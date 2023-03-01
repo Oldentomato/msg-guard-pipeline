@@ -68,7 +68,7 @@ class MsgPredict:
         USE_CUDA = torch.cuda.is_available()
         device = torch.device("cuda" if USE_CUDA else "cpu")
         print(self._msg_df)
-        with open('artifacts/vocab.pkl','rb') as f:
+        with open('/manager/artifacts/vocab.pkl','rb') as f:
             SAVE_TEXT = pickle.load(f)
         
         okt=Okt() 

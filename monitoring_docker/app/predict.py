@@ -4,7 +4,7 @@ import torch
 
 def prediction(msg_body):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = torch.load("../artifacts/model.pt", map_location=device)
+    model = torch.load("/manager/artifacts/model.pt", map_location=device)
 
     MsgPredict = MsgPredict(msg_body.dict())
     features = MsgPredict.SetData()
