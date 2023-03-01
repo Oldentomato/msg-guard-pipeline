@@ -42,8 +42,6 @@ for e in range(1, EPOCHS+1):
     if not best_val_loss or val_loss < best_val_loss:
         if not os.path.isdir("snapshot"):
             os.makedirs("snapshot")
-        if not os.path.isdir("artifacts"):
-            os.makedirs("artifacts")
         torch.save(model, "artifacts/model.pt")
         chkp_name = datetime.today().strftime("%Y_%m_%d")
         torch.save(model.state_dict(), './snapshot/'+chkp_name+'.pt')
