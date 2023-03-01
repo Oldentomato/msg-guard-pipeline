@@ -1,15 +1,17 @@
 from pathlib import Path
 import numpy as np
 from fastapi import FastAPI, Response
-from .schemas import Wine, Rating, feature_names
 from .monitoring import instrumentator
-from data_preprocessing import MsgPredict
-from predict import predict
+from predict import prediction
+from pydantic import BaseModel
 
 ROOT_DIR = Path(__file__).parent.parent
 
 app = FastAPI()
 
+class MSG(BaseModel):
+    id: int
+    msg_body: str
 
 instrumentator.instrument(app).expose(app, include_in_schema=False, should_gzip=True)
 
@@ -19,13 +21,10 @@ def root():
     
 
 
-@app.post("/predict", response_model=Rating)
-def predict(response: Response, sample: Wine):
-    features = MsgPredict(sample.dict())
-
-    prediction = predict(features)
-    response.headers["X-model-Msg"] = str(prediction)
-    return prediction
+@app.post("/predict")
+def predict(msg: MSG):
+    result = prediction(msg)
+    return {"spam": result}
 
 
 @app.post("/urlpredict")
