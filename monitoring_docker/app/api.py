@@ -1,7 +1,6 @@
 from pathlib import Path
-import numpy as np
-from fastapi import FastAPI, Response
-from .monitoring import instrumentator
+from fastapi import FastAPI
+# from .monitoring import instrumentator
 from predict import prediction
 from pydantic import BaseModel
 
@@ -13,7 +12,7 @@ class MSG(BaseModel):
     id: int
     msg_body: str
 
-instrumentator.instrument(app).expose(app, include_in_schema=False, should_gzip=True)
+# instrumentator.instrument(app).expose(app, include_in_schema=False, should_gzip=True)
 
 @app.get("/")
 def root():
