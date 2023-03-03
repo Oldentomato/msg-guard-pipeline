@@ -6,19 +6,19 @@ pipeline {
 				checkout scm
 			}
 		}
-		// stage("Build") {
-		// 	steps {
-		// 		sh 'docker-compose build'
-		// 	}
-		// }
+		stage("Build") {
+			steps {
+				sh 'sudo docker-compose build'
+			}
+		}
 		stage("deploy") {
 			steps {
-				sh "docker-compose up -d"
+				sh "sudo docker-compose up -d"
 			}
 		}
 		stage("Update model") {
 			steps {
-				sh "docker exec -i msg_guard-web-1 python train.py"
+				sh "sudo docker exec -i msg_guard-web-1 python train.py"
 			}
 		}
 	}
