@@ -6,11 +6,11 @@ pipeline {
 				checkout scm
 			}
 		}
-		stage("Build") {
-			steps {
-				sh 'docker-compose build'
-			}
-		}
+		// stage("Build") {
+		// 	steps {
+		// 		sh 'docker-compose build'
+		// 	}
+		// }
 		stage("deploy") {
 			steps {
 				sh "docker-compose up -d"
