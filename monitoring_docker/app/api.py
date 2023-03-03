@@ -1,6 +1,6 @@
 from pathlib import Path
 from fastapi import FastAPI
-# from .monitoring import instrumentator
+# from app.monitoring import instrumentator
 from app.predict import prediction
 from pydantic import BaseModel
 
