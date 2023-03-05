@@ -1,0 +1,18 @@
+fastapi==0.92.0
+numpy==1.22.3
+pandas==1.5.3
+# prometheus-fastapi-instrumentator
+scikit-learn==1.2.1
+pydantic==1.10.5
+uvicorn==0.20.0
+matplotlib==3.7.0
+pyspark==3.3.1
+konlpy==0.6.0
+feast==0.29.0
+# --find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.0
+torchvision==0.9.0
+torchaudio==0.8.0
+torchtext==0.9.0
+konlpy==0.6.0
+feast==0.29.0
