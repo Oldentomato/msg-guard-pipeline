@@ -9,6 +9,7 @@ RUN apt-get update && \
 WORKDIR /code/datas 
 COPY . /code/datas
 
-EXPOSE 21571
-# RUN python get_data.py
-# CMD ["feast","apply"]
+EXPOSE 6566
+RUN python get_data.py && \
+    feast apply
+CMD ["feast","serve"]   

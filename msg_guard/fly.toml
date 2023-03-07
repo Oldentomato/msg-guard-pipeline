@@ -1,4 +1,4 @@
-# fly.toml file generated for msgguard on 2023-03-05T15:30:09+09:00
+# fly.toml file generated for msgguard on 2023-03-05T21:05:07+09:00
 
 app = "msgguard"
 kill_signal = "SIGINT"
@@ -6,6 +6,10 @@ kill_timeout = 5
 processes = []
 
 [env]
+
+[mounts]
+source="msg_datas"
+destination="/datas"
 
 [experimental]
   auto_rollback = true

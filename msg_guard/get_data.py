@@ -4,6 +4,18 @@ import pandas as pd
 import re
 from datetime import datetime
 
+def SetOnlineCleanData(df):
+    if df['msg_body'].find('(광고)') == -1:
+        return -1
+    else:
+        new_str = df['msg_body'].replace('[Web발신]','')
+        new_time = datetime.fromtimestamp(df['event_timestamp']/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
+        hangul = re.compile('[^ ㄱ-ㅣ가-힣]+')
+        result = hangul.sub('',new_str)
+        df.loc[0,'msg_body'] = result
+        df.loc[0,'event_timestamp'] = new_time
+        return df
+
 def GetDataFromMongoSpark():
     spark = SparkSession \
     .builder \
@@ -50,7 +62,7 @@ def SetCleanData(pddf):
     print(msg_df)
 
     #feature store를 위한 parquet 파일 저장
-    msg_df.to_parquet('/workspace/msg_data.parquet')
+    msg_df.to_parquet('/app/datas/msg_data.parquet')
 
 
     #url 감지(이건 나중에)

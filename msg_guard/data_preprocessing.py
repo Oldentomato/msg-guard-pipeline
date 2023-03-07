@@ -8,6 +8,7 @@ from datetime import datetime
 import torch.nn.functional as F
 import feast
 import pickle
+from get_data import SetOnlineCleanData
 
 
 class DataFrameDataset(Dataset):
@@ -62,52 +63,57 @@ def Split_DataFrame(df, frac, random_state):
 
 class MsgPredict:
     def __init__(self,msg_body):
-        self._msg_df = pd.DataFrame(msg_body,index = [0])
+        msg_df = pd.DataFrame(msg_body,index = [0])
+        self._msg_df = SetOnlineCleanData(msg_df)
 
     def SetData(self):
         USE_CUDA = torch.cuda.is_available()
         device = torch.device("cuda" if USE_CUDA else "cpu")
         print(self._msg_df)
-        with open('/workspace/artifacts/vocab.pkl','rb') as f:
-            SAVE_TEXT = pickle.load(f)
-        
-        okt=Okt() 
+        if self._msg_df != -1: #(광고) 문자열 있는지 체크
+            with open('/app/datas/artifacts/vocab.pkl','rb') as f:
+                SAVE_TEXT = pickle.load(f)
+            
+            okt=Okt() 
 
-        ID = Field(sequential = False, use_vocab = False)
-        TEXT = Field(sequential = True,
-                          use_vocab = True,
-                          tokenize = okt.morphs,
-                          lower = True,
-                          batch_first = True,
-                          fix_length = 20)
-        
-        fields = {"id": ID, "msg_body":TEXT}
+            ID = Field(sequential = False, use_vocab = False)
+            TEXT = Field(sequential = True,
+                            use_vocab = True,
+                            tokenize = okt.morphs,
+                            lower = True,
+                            batch_first = True,
+                            fix_length = 20)
+            
+            fields = {"id": ID, "msg_body":TEXT}
 
-        data = DataFrameDataset(self._msg_df, fields)
+            data = DataFrameDataset(self._msg_df, fields)
 
-        TEXT.build_vocab(data)
+            TEXT.build_vocab(data)
 
 
-#         indexed = [TEXT.vocab.stoi[i] for i in TEXT.vocab.stoi.keys()]
-        index = []
-        
-        for key, value in TEXT.vocab.stoi.items():
-            if key in SAVE_TEXT:
-                index.append(SAVE_TEXT[key])
-            else:
-                index.append(0)
-                
-        tensor = torch.LongTensor(index).to(device)
-        tensor = tensor.unsqueeze(0)
-#         print(TEXT.vocab.stoi)
-#         print(SAVE_TEXT)
-#         print("vocab:")
-#         print(index)
-#         for i in TEXT.vocab.stoi.keys():
-#             print(i)
-#             print(TEXT.vocab.stoi[i])
-        
-        return tensor
+    #         indexed = [TEXT.vocab.stoi[i] for i in TEXT.vocab.stoi.keys()]
+            index = []
+            
+            for key, value in TEXT.vocab.stoi.items():
+                if key in SAVE_TEXT:
+                    index.append(SAVE_TEXT[key])
+                else:
+                    index.append(0)
+                    
+            tensor = torch.LongTensor(index).to(device)
+            tensor = tensor.unsqueeze(0)
+    #         print(TEXT.vocab.stoi)
+    #         print(SAVE_TEXT)
+    #         print("vocab:")
+    #         print(index)
+    #         for i in TEXT.vocab.stoi.keys():
+    #             print(i)
+    #             print(TEXT.vocab.stoi[i])
+            
+            return tensor
+        else:
+            print("(광고) 문구가 들어가있어서 통과되었음")
+            return -1
 
         
 

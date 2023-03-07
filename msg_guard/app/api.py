@@ -3,10 +3,22 @@ from fastapi import FastAPI
 # from app.monitoring import instrumentator
 from app.predict import prediction
 from pydantic import BaseModel
+# from fastapi.middleware.cors import CORSMiddleware
 
 ROOT_DIR = Path(__file__).parent.parent
 
 app = FastAPI()
+
+# origins = ["*"]
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methoed=["*"],
+#     allow_headers=["*"]
+# )
+
 
 class MSG(BaseModel):
     id: int
@@ -16,7 +28,7 @@ class MSG(BaseModel):
 
 @app.get("/")
 def root():
-    return "Online"
+    return {"Online":"OK"}
     
 
 
