@@ -5,13 +5,13 @@ import re
 from datetime import datetime
 
 def SetOnlineCleanData(df):
-    if df['msg_body'].find('(광고)') == -1:
+    if df['msg_body'][0].find('(광고)') != -1:
         return -1
     else:
-        new_str = df['msg_body'].replace('[Web발신]','')
+        new_str = df['msg_body'][0].replace('[Web발신]','')
         new_time = datetime.fromtimestamp(df['event_timestamp']/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
         hangul = re.compile('[^ ㄱ-ㅣ가-힣]+')
-        result = hangul.sub('',new_str)
+        result = hangul.sub(' ',new_str)
         df.loc[0,'msg_body'] = result
         df.loc[0,'event_timestamp'] = new_time
         return df
@@ -55,7 +55,7 @@ def SetCleanData(pddf):
         new_str = items['msg_body'].replace('[Web발신]','')
         new_time = datetime.fromtimestamp(items['event_timestamp']/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
         hangul = re.compile('[^ ㄱ-ㅣ가-힣]+')
-        result = hangul.sub('',new_str)
+        result = hangul.sub(' ',new_str)
         msg_df.loc[i,'msg_body'] = result
         msg_df.loc[i,'event_timestamp'] = new_time
         
