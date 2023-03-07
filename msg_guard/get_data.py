@@ -9,7 +9,7 @@ def SetOnlineCleanData(df):
         return -1
     else:
         new_str = df['msg_body'][0].replace('[Web발신]','')
-        new_time = datetime.fromtimestamp(df['event_timestamp']/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
+        new_time = datetime.fromtimestamp(df['event_timestamp'][0]/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
         hangul = re.compile('[^ ㄱ-ㅣ가-힣]+')
         result = hangul.sub(' ',new_str)
         df.loc[0,'msg_body'] = result
