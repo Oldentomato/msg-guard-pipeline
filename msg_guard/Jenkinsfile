@@ -1,0 +1,62 @@
+pipeline {
+	agent any
+	environment{
+		DH_CREDS=credentials('dh-creds')
+		IMAGE_NAME="oldentomato/msg_guard_pipeline"
+		IMAGE_VERSION="0.0.1"
+		FLY_API_TOKEN=credentials('fly-api-token')
+		FLY_APP="msgguard"
+	}
+	stages{
+		stage('Verify tooling'){
+			steps{
+				sh '''
+				java -version
+				flyctl version
+				docker info
+				'''
+			}
+		}
+		stage('Get native-image'){
+			steps{
+				sh 'gu install native-image'
+			}
+		}
+		stage('Build the native binary'){
+			steps{
+				sh './mvnw clean package -Pnative'
+			}
+		}
+		stage('Create the image'){
+			steps{
+				sh `docker build --progress=plain -t $IMAGE_NAME:$IMAGE_VERSION .`
+			}
+		}
+		stage('login'){
+			steps{
+				sh `echo $DH_CREDS_PSW | docker login --username=$DH_CREDS_USR --password-stdin`
+			}
+		}
+		stage('push image'){
+			steps{
+				sh `docker push $IMAGE_NAME:$IMAGE_VERSION`
+			}
+		}
+		stage('deploy to fly'){
+			steps{
+				sh 'flyctl regions set iad'
+				sh `flyctl deploy --image $IMAGE_NAME:$IMAGE_VERSION --now`
+			}
+		}
+		stage('verify deployment'){
+			steps{
+				sh 'flyctl status'
+			}
+		}
+	}
+	post{
+		always{
+			sh 'docker logout'
+		}
+	}
+}
