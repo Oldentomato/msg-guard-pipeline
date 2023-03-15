@@ -29,23 +29,23 @@ pipeline {
 		}
 		stage('Create the image'){
 			steps{
-				sh `docker build --progress=plain -t $IMAGE_NAME:$IMAGE_VERSION .`
+				sh 'docker build --progress=plain -t $IMAGE_NAME:$IMAGE_VERSION .'
 			}
 		}
 		stage('login'){
 			steps{
-				sh `echo $DH_CREDS_PSW | docker login --username=$DH_CREDS_USR --password-stdin`
+				sh 'echo $DH_CREDS_PSW | docker login --username=$DH_CREDS_USR --password-stdin'
 			}
 		}
 		stage('push image'){
 			steps{
-				sh `docker push $IMAGE_NAME:$IMAGE_VERSION`
+				sh 'docker push $IMAGE_NAME:$IMAGE_VERSION'
 			}
 		}
 		stage('deploy to fly'){
 			steps{
 				sh 'flyctl regions set iad'
-				sh `flyctl deploy --image $IMAGE_NAME:$IMAGE_VERSION --now`
+				sh 'flyctl deploy --image $IMAGE_NAME:$IMAGE_VERSION --now'
 			}
 		}
 		stage('verify deployment'){
