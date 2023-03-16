@@ -4,7 +4,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends default-jre default-jdk
 RUN python -m pip install --upgrade pip
 RUN pip install -r requirements.txt
-volume ["/app/datas"]
 WORKDIR /app/datas
 COPY . /app/datas
 RUN mkdir /app/datas/artifacts
