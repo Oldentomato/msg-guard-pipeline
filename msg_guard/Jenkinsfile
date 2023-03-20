@@ -1,7 +1,7 @@
 pipeline {
 	agent any
 	environment{
-		DH_CREDS=credentials('dh-creds')
+		DH_CREDS=credentials('docker-hub')
 		IMAGE_NAME="oldentomato/msg_guard_pipeline"
 		IMAGE_VERSION="0.0.1"
 		FLY_API_TOKEN=credentials('fly-api-token')
