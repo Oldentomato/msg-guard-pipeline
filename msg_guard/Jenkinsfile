@@ -12,6 +12,7 @@ pipeline {
 			steps{
 				sh '''
 				java -version
+				source /etc/profile
 				flyctl version
 				docker info
 				'''
