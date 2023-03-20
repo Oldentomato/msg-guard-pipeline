@@ -7,13 +7,13 @@ pipeline {
 		FLY_API_TOKEN=credentials('fly-api-token')
 		FLY_APP="msgguard"
 	}
+	// flyctl 을 로컬에서 설치하고 설치될때 export 두 문장이나오는데 vi ~/.bashrc 에 넣어두면 된다.
 	stages{
 		stage('Verify tooling'){
 			steps{
 				sh '''
 				java -version
-				source /etc/profile
-				flyctl version
+				flyctl version 
 				docker info
 				'''
 			}
