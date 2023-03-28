@@ -70,7 +70,7 @@ class MsgPredict:
         USE_CUDA = torch.cuda.is_available()
         device = torch.device("cuda" if USE_CUDA else "cpu")
         print(self._msg_df)
-        if self._msg_df != -1: #(광고) 문자열 있는지 체크
+        if not self._msg_df.empty: #(광고) 문자열 있는지 체크
             with open('/app/datas/artifacts/vocab.pkl','rb') as f:
                 SAVE_TEXT = pickle.load(f)
             

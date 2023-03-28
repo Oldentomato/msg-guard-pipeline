@@ -23,6 +23,7 @@ app = FastAPI()
 class MSG(BaseModel):
     id: int
     msg_body: str
+    event_timestamp: int
 
 # instrumentator.instrument(app).expose(app, include_in_schema=False, should_gzip=True)
 
