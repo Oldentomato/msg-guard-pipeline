@@ -6,7 +6,7 @@ from datetime import datetime
 
 def SetOnlineCleanData(df):
     if df['msg_body'][0].find('(광고)') != -1:
-        return None
+        return pd.DataFrame()
     else:
         new_str = df['msg_body'][0].replace('[Web발신]','')
         new_time = datetime.fromtimestamp(df['event_timestamp'][0]/1000) #그냥 초가 아니라 밀리초로 되어있어서 1000을 나누어야한다
