@@ -9,7 +9,7 @@ def prediction(msg_body):
     mgs_predict = MsgPredict(msg_body.dict())
     features = mgs_predict.SetData()
 
-    if features != -1:
+    if features != None:
         model.eval()
         with torch.no_grad():
             output = model(features)

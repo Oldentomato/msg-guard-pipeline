@@ -70,7 +70,7 @@ class MsgPredict:
         USE_CUDA = torch.cuda.is_available()
         device = torch.device("cuda" if USE_CUDA else "cpu")
         print(self._msg_df)
-        if not self._msg_df.empty: #(광고) 문자열 있는지 체크
+        if self._msg_df != None: #(광고) 문자열 있는지 체크
             with open('/app/datas/artifacts/vocab.pkl','rb') as f:
                 SAVE_TEXT = pickle.load(f)
             
@@ -113,7 +113,7 @@ class MsgPredict:
             return tensor
         else:
             print("(광고) 문구가 들어가있어서 통과되었음")
-            return -1
+            return None
 
         
 
