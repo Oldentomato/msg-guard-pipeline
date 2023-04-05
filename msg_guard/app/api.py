@@ -36,7 +36,11 @@ def root():
 @app.post("/predict")
 def predict_msg(msg: MSG):
     result = prediction(msg)
-    return {"spam": result}
+    if result == 2:
+        return {"success": False}
+    
+    return {"spam": result,
+            "success": True}
 
 
 @app.post("/urlpredict")
